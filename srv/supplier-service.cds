@@ -1,5 +1,5 @@
-using demo from '../db/schema'
+using supplier from '../db/schema';
 
 service SupplierService{
-    entity Applications as projection on demo.application;
+    entity Applications as projection on supplier.Applications;
 }
