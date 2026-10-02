@@ -1,0 +1,51 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+	<ViewSettingsDialog
+		id="settingsDialog"
+		title="{i18n>settings}"
+		sortDescending="true"
+		selectedSortItem="sortSubmittedAt"
+		confirm=".onSettingsConfirm"
+		reset=".onSettingsReset">
+		<sortItems>
+			<ViewSettingsItem id="sortSubmittedAt" key="submittedAt" text="{i18n>submittedAt}" />
+			<ViewSettingsItem key="companyName" text="{i18n>companyName}" />
+			<ViewSettingsItem key="contactPerson" text="{i18n>contactPerson}" />
+			<ViewSettingsItem key="email" text="{i18n>email}" />
+			<ViewSettingsItem key="status" text="{i18n>status}" />
+			<ViewSettingsItem key="category" text="{i18n>category}" />
+			<ViewSettingsItem key="country" text="{i18n>country}" />
+		</sortItems>
+		<filterItems>
+			<ViewSettingsFilterItem key="category" text="{i18n>filterCategory}" multiSelect="true">
+				<items>
+					<ViewSettingsItem key="HARDWARE" text="{i18n>categoryHARDWARE}" />
+					<ViewSettingsItem key="SOFTWARE" text="{i18n>categorySOFTWARE}" />
+					<ViewSettingsItem key="SERVICES" text="{i18n>categorySERVICES}" />
+					<ViewSettingsItem key="CONSULTING" text="{i18n>categoryCONSULTING}" />
+				</items>
+			</ViewSettingsFilterItem>
+		</filterItems>
+		<customTabs>
+			<!-- column show / hide: each checkbox is two-way bound to the same flag as the table column -->
+			<ViewSettingsCustomTab id="columnsTab" key="columns" icon="sap-icon://table-column" title="{i18n>columnsTab}" tooltip="{i18n>columnsTab}">
+				<content>
+					<VBox class="sapUiSmallMargin">
+						<Title text="{i18n>columnsTitle}" level="H3" titleStyle="H6" class="sapUiTinyMarginBottom" />
+						<CheckBox text="{i18n>companyName}" selected="{view>/columns/companyName}" />
+						<CheckBox text="{i18n>contactPerson}" selected="{view>/columns/contactPerson}" />
+						<CheckBox text="{i18n>email}" selected="{view>/columns/email}" />
+						<CheckBox text="{i18n>submittedAt}" selected="{view>/columns/submittedAt}" />
+						<CheckBox text="{i18n>status}" selected="{view>/columns/status}" />
+						<CheckBox text="{i18n>phone}" selected="{view>/columns/phone}" />
+						<CheckBox text="{i18n>country}" selected="{view>/columns/country}" />
+						<CheckBox text="{i18n>category}" selected="{view>/columns/category}" />
+						<CheckBox text="{i18n>taxNumber}" selected="{view>/columns/taxNumber}" />
+						<CheckBox text="{i18n>website}" selected="{view>/columns/website}" />
+						<CheckBox text="{i18n>address}" selected="{view>/columns/address}" />
+						<CheckBox text="{i18n>notes}" selected="{view>/columns/notes}" />
+					</VBox>
+				</content>
+			</ViewSettingsCustomTab>
+		</customTabs>
+	</ViewSettingsDialog>
+</core:FragmentDefinition>

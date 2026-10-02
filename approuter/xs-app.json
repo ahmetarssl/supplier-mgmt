@@ -1,0 +1,58 @@
+{
+  "welcomeFile": "/index.html",
+  "authenticationMethod": "route",
+  "logout": {
+    "logoutEndpoint": "/do/logout",
+    "logoutPage": "/"
+  },
+  "routes": [
+    {
+      "source": "^/user-api(.*)",
+      "target": "$1",
+      "service": "sap-approuter-userapi",
+      "authenticationType": "xsuaa"
+    },
+    {
+      "source": "^/odata/v4/supplier/(register|login|logout|saveApplication|submitApplication|getMyApplication\\(\\))$",
+      "httpMethods": [
+        "GET",
+        "POST"
+      ],
+      "destination": "srv-api",
+      "authenticationType": "none",
+      "csrfProtection": false
+    },
+    {
+      "source": "^/odata/v4/supplier/CertificateUploads\\([0-9a-fA-F-]{36}\\)/certificate$",
+      "httpMethods": [
+        "PUT"
+      ],
+      "destination": "srv-api",
+      "authenticationType": "none",
+      "csrfProtection": false
+    },
+    {
+      "source": "^/odata/v4/supplier/(.*)$",
+      "destination": "srv-api",
+      "authenticationType": "xsuaa",
+      "scope": "$XSAPPNAME.Approval",
+      "csrfProtection": true
+    },
+    {
+      "source": "^/portal/(.*)$",
+      "destination": "srv-api",
+      "authenticationType": "none"
+    },
+    {
+      "source": "^/approvals/(.*)$",
+      "destination": "srv-api",
+      "authenticationType": "xsuaa",
+      "scope": "$XSAPPNAME.Approval"
+    },
+    {
+      "source": "^/(.*)$",
+      "destination": "srv-api",
+      "authenticationType": "xsuaa"
+    }
+  ]
+}

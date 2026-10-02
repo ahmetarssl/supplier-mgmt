@@ -1,0 +1,11 @@
+{
+  "name": "supplier-mgmt-approuter",
+  "private": true,
+  "description": "Entry point on :5000 - login (XSUAA), scope checks and routing to the CAP backend on :4004",
+  "scripts": {
+    "start": "node node_modules/@sap/approuter/approuter.js"
+  },
+  "dependencies": {
+    "@sap/approuter": "^23"
+  }
+}

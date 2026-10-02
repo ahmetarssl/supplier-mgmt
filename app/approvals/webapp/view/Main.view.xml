@@ -1,0 +1,96 @@
+<mvc:View
+	controllerName="supplier.approvals.controller.Main"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns="sap.m"
+	displayBlock="true">
+	<App id="app">
+		<Page id="mainPage" title="{i18n>appTitle}">
+			<IconTabBar
+				id="statusTabs"
+				selectedKey="{view>/tab}"
+				select=".onTabSelect"
+				expandable="false"
+				stretchContentHeight="false"
+				class="sapUiResponsiveContentPadding">
+				<items>
+					<IconTabFilter key="all" text="{i18n>tabAll}" count="{view>/counts/total}" showAll="true" />
+					<IconTabSeparator />
+					<IconTabFilter key="pending" icon="sap-icon://pending" iconColor="Critical" text="{i18n>tabPending}" count="{view>/counts/pending}" />
+					<IconTabFilter key="approved" icon="sap-icon://accept" iconColor="Positive" text="{i18n>tabApproved}" count="{view>/counts/approved}" />
+					<IconTabFilter key="rejected" icon="sap-icon://decline" iconColor="Negative" text="{i18n>tabRejected}" count="{view>/counts/rejected}" />
+				</items>
+				<content>
+					<Table
+						id="suppliersTable"
+						growing="true"
+						growingThreshold="20"
+						sticky="ColumnHeaders,HeaderToolbar"
+						noDataText="{i18n>noData}"
+						updateFinished=".onTableUpdateFinished"
+						items="{
+							path: '/Suppliers',
+							parameters: { $count: true },
+							sorter: { path: 'submittedAt', descending: true }
+						}">
+						<headerToolbar>
+							<OverflowToolbar>
+								<Title text="{parts: ['i18n>tableTitle', 'view>/total'], formatter: '.formatMessage'}" level="H2" />
+								<ToolbarSpacer />
+								<SearchField
+									id="searchField"
+									value="{view>/query}"
+									width="22rem"
+									placeholder="{i18n>searchPlaceholder}"
+									liveChange=".onSearch"
+									search=".onSearch" />
+								<!-- only visible while any filter (tab, search, settings) is active -->
+								<Button
+									text="{i18n>clearFilters}"
+									icon="sap-icon://clear-filter"
+									type="Transparent"
+									visible="{view>/filtersActive}"
+									press=".onClearFilters" />
+								<Button icon="sap-icon://action-settings" tooltip="{i18n>settings}" press=".onOpenSettings" />
+							</OverflowToolbar>
+						</headerToolbar>
+						<columns>
+							<Column visible="{view>/columns/companyName}"><Text text="{i18n>companyName}" /></Column>
+							<Column visible="{view>/columns/contactPerson}"><Text text="{i18n>contactPerson}" /></Column>
+							<Column visible="{view>/columns/email}"><Text text="{i18n>email}" /></Column>
+							<Column visible="{view>/columns/submittedAt}"><Text text="{i18n>submittedAt}" /></Column>
+							<Column visible="{view>/columns/status}"><Text text="{i18n>status}" /></Column>
+							<Column visible="{view>/columns/phone}"><Text text="{i18n>phone}" /></Column>
+							<Column visible="{view>/columns/country}"><Text text="{i18n>country}" /></Column>
+							<Column visible="{view>/columns/category}"><Text text="{i18n>category}" /></Column>
+							<Column visible="{view>/columns/taxNumber}"><Text text="{i18n>taxNumber}" /></Column>
+							<Column visible="{view>/columns/website}"><Text text="{i18n>website}" /></Column>
+							<Column visible="{view>/columns/address}"><Text text="{i18n>address}" /></Column>
+							<Column visible="{view>/columns/notes}"><Text text="{i18n>notes}" /></Column>
+						</columns>
+						<items>
+							<ColumnListItem type="Navigation" press=".onOpenDetail">
+								<cells>
+									<Text text="{companyName}" />
+									<Text text="{contactPerson}" />
+									<Text text="{email}" />
+									<Text text="{submittedAt}" />
+									<ObjectStatus
+										text="{path: 'status', formatter: '.statusText'}"
+										state="{path: 'status', formatter: '.statusState'}" />
+									<Text text="{phone}" />
+									<Text text="{country}" />
+									<Text text="{path: 'category', formatter: '.categoryText'}" />
+									<Text text="{taxNumber}" />
+									<Text text="{website}" />
+									<Text text="{address}" maxLines="2" />
+									<Text text="{notes}" maxLines="2" />
+								</cells>
+							</ColumnListItem>
+						</items>
+					</Table>
+				</content>
+			</IconTabBar>
+		</Page>
+	</App>
+</mvc:View>

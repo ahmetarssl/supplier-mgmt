@@ -1,0 +1,58 @@
+<mvc:View
+	controllerName="supplier.portal.controller.Login"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns="sap.m">
+	<Page id="loginPage" title="{i18n>appTitle}">
+		<FlexBox justifyContent="Center" class="sapUiMediumMarginTop">
+			<VBox width="24rem" class="sapUiSmallMarginBeginEnd">
+				<Title text="{i18n>loginTitle}" level="H2" titleStyle="H3" />
+				<Text text="{i18n>loginSubtitle}" class="sapUiTinyMarginTop sapUiSmallMarginBottom" />
+
+				<MessageStrip
+					text="{login>/error}"
+					type="Error"
+					showIcon="true"
+					visible="{= !!${login>/error} }"
+					class="sapUiSmallMarginBottom" />
+
+				<Label text="{i18n>emailLabel}" labelFor="loginEmail" required="true" />
+				<Input
+					id="loginEmail"
+					type="Email"
+					value="{login>/email}"
+					placeholder="{i18n>emailPlaceholder}"
+					valueState="{login>/emailState}"
+					valueStateText="{i18n>emailInvalid}"
+					submit=".onLogin" />
+
+				<Label text="{i18n>passwordLabel}" labelFor="loginPassword" required="true" class="sapUiSmallMarginTop" />
+				<Input
+					id="loginPassword"
+					type="{= ${login>/showPassword} ? 'Text' : 'Password' }"
+					value="{login>/password}"
+					placeholder="{i18n>passwordPlaceholder}"
+					valueState="{login>/passwordState}"
+					valueStateText="{i18n>fieldRequired}"
+					showValueHelp="true"
+					valueHelpIconSrc="{= ${login>/showPassword} ? 'sap-icon://hide' : 'sap-icon://show' }"
+					valueHelpRequest=".onTogglePassword"
+					tooltip="{= ${login>/showPassword} ? ${i18n>hidePassword} : ${i18n>showPassword} }"
+					submit=".onLogin" />
+
+				<Button
+					text="{i18n>loginButton}"
+					type="Emphasized"
+					width="100%"
+					busy="{login>/busy}"
+					press=".onLogin"
+					class="sapUiMediumMarginTop" />
+
+				<HBox alignItems="Center" class="sapUiSmallMarginTop">
+					<Text text="{i18n>noAccountText}" class="sapUiTinyMarginEnd" />
+					<Link text="{i18n>registerLink}" press=".onNavToRegister" />
+				</HBox>
+			</VBox>
+		</FlexBox>
+	</Page>
+</mvc:View>

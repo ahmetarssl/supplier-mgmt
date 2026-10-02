@@ -17,3 +17,6 @@ mta_archives/
 
 # @cap-js/cds-typer
 @cds-models
+
+# approuter: default-env.json only holds the local backend URL (no secrets) -> committed
+!approuter/default-env.json

@@ -1,0 +1,76 @@
+{
+  "services": {
+    "LaunchPage": {
+      "adapter": {
+        "config": {
+          "groups": [
+            {
+              "id": "SupplierManagement",
+              "title": "{{groupTitle}}",
+              "isPreset": true,
+              "isVisible": true,
+              "isGroupLocked": false,
+              "tiles": [
+                {
+                  "id": "SupplierPortalTile",
+                  "tileType": "sap.ushell.ui.tile.StaticTile",
+                  "properties": {
+                    "title": "{{tilePortalTitle}}",
+                    "subtitle": "{{tilePortalSubtitle}}",
+                    "icon": "sap-icon://supplier",
+                    "targetURL": "#Supplier-apply"
+                  }
+                },
+                {
+                  "id": "SupplierApprovalsTile",
+                  "tileType": "sap.ushell.ui.tile.StaticTile",
+                  "properties": {
+                    "title": "{{tileApprovalsTitle}}",
+                    "subtitle": "{{tileApprovalsSubtitle}}",
+                    "icon": "sap-icon://approvals",
+                    "targetURL": "#Supplier-approve"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "NavTargetResolution": {
+      "config": {
+        "enableClientSideTargetResolution": true
+      }
+    },
+    "ClientSideTargetResolution": {
+      "adapter": {
+        "config": {
+          "inbounds": {
+            "SupplierApply": {
+              "semanticObject": "Supplier",
+              "action": "apply",
+              "title": "{{tilePortalTitle}}",
+              "signature": { "parameters": {}, "additionalParameters": "allowed" },
+              "resolutionResult": {
+                "applicationType": "SAPUI5",
+                "additionalInformation": "SAPUI5.Component=supplier.portal",
+                "url": "/portal/webapp"
+              }
+            },
+            "SupplierApprove": {
+              "semanticObject": "Supplier",
+              "action": "approve",
+              "title": "{{tileApprovalsTitle}}",
+              "signature": { "parameters": {}, "additionalParameters": "allowed" },
+              "resolutionResult": {
+                "applicationType": "SAPUI5",
+                "additionalInformation": "SAPUI5.Component=supplier.approvals",
+                "url": "/approvals/webapp"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -3,13 +3,60 @@
   "version": "1.0.0",
   "type": "module",
   "dependencies": {
-    "@sap/cds": "^10"
+    "@sap/cds": "^10",
+    "@sap/xssec": "^4.15.0",
+    "bcryptjs": "^3.0.3",
+    "pdf-parse": "^2.4.5"
   },
   "devDependencies": {
     "@cap-js/sqlite": "^3"
   },
   "scripts": {
-    "start": "cds-serve"
+    "start": "cds-serve",
+    "watch": "cds watch",
+    "watch:hybrid": "cds watch --profile hybrid",
+    "router:hybrid": "cds bind --exec --profile hybrid -- npm start --prefix approuter",
+    "seed": "node scripts/seed.mjs",
+    "test:api": "node scripts/api-test.mjs"
   },
-  "private": true
+  "private": true,
+  "cds": {
+    "requires": {
+      "auth": {
+        "[development]": {
+          "kind": "mocked",
+          "users": {
+            "approver": {
+              "password": "approver",
+              "roles": [
+                "Approval"
+              ]
+            },
+            "norole": {
+              "password": "norole",
+              "roles": []
+            }
+          }
+        },
+        "[hybrid]": {
+          "kind": "xsuaa"
+        },
+        "[production]": {
+          "kind": "xsuaa"
+        }
+      },
+      "openrouter": {
+        "kind": "rest",
+        "credentials": {
+          "destination": "openrouter-api",
+          "requestTimeout": 20000
+        },
+        "llmModel": "openai/gpt-4o-mini",
+        "maxAttempts": 3
+      }
+    },
+    "remote": {
+      "native_fetch": true
+    }
+  }
 }

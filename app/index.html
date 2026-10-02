@@ -1,0 +1,87 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title></title>
+
+	<script>
+		// 1) Shell configuration BEFORE the sandbox starts.
+		//    The approuter's user API returns the XSUAA user of the current session;
+		//    it is shown in the launchpad header (user menu).
+		(function () {
+			var config = {
+				defaultRenderer: "fiori2",
+				renderers: { fiori2: { componentData: { config: { enableSearch: false } } } },
+				services: {}
+			};
+			try {
+				var xhr = new XMLHttpRequest();
+				xhr.open("GET", "/user-api/currentUser", false); // sync on purpose: config must exist before sandbox.js
+				xhr.send();
+				if (xhr.status === 200) {
+					var user = JSON.parse(xhr.responseText);
+					config.services.Container = {
+						adapter: {
+							config: {
+								id: user.name,
+								email: user.email,
+								firstName: user.firstname,
+								lastName: user.lastname,
+								fullName: user.displayName || [user.firstname, user.lastname].join(" ")
+							}
+						}
+					};
+				}
+			} catch (e) {
+				// no approuter (e.g. opened directly on :4004) -> sandbox default user
+			}
+			window["sap-ushell-config"] = config;
+		})();
+	</script>
+
+	<!-- 2) the sandbox merges app/appconfig/fioriSandboxConfig.json (tiles + target resolution) into the config -->
+	<script id="sap-ushell-bootstrap" src="https://ui5.sap.com/test-resources/sap/ushell/bootstrap/sandbox.js"></script>
+	<script
+		id="sap-ui-bootstrap"
+		src="https://ui5.sap.com/resources/sap-ui-core.js"
+		data-sap-ui-libs="sap.m,sap.ushell"
+		data-sap-ui-compat-version="edge"
+		data-sap-ui-theme="sap_horizon"
+		data-sap-ui-async="true"
+		data-sap-ui-resource-roots='{ "supplier.portal": "./portal/webapp", "supplier.approvals": "./approvals/webapp" }'>
+	</script>
+
+	<script>
+		// 3) Tile/group titles in fioriSandboxConfig.json are i18n keys ({{key}}): resolve them from
+		//    app/i18n/i18n_<browser language>.properties before the renderer reads the config.
+		sap.ui.getCore().attachInit(function () {
+			sap.ui.require(["sap/base/i18n/ResourceBundle"], async function (ResourceBundle) {
+				const bundle = await ResourceBundle.create({
+					url: "i18n/i18n.properties",
+					supportedLocales: ["en", "tr"],
+					fallbackLocale: "en",
+					async: true
+				});
+				const resolve = (node) => {
+					Object.keys(node).forEach((key) => {
+						const value = node[key];
+						if (value && typeof value === "object") {
+							resolve(value);
+						} else if (typeof value === "string") {
+							node[key] = value.replace(/\{\{(\w+)\}\}/g, (match, textKey) => bundle.getText(textKey));
+						}
+					});
+				};
+				resolve(window["sap-ushell-config"].services);
+				document.title = bundle.getText("launchpadTitle");
+
+				const renderer = await sap.ushell.Container.createRenderer("fiori2", true);
+				renderer.placeAt("content");
+			});
+		});
+	</script>
+</head>
+
+<body class="sapUiBody" id="content"></body>
+</html>

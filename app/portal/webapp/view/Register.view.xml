@@ -1,0 +1,86 @@
+<mvc:View
+	controllerName="supplier.portal.controller.Register"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns="sap.m">
+	<Page id="registerPage" title="{i18n>appTitle}" showNavButton="true" navButtonPress=".onNavToLogin">
+		<FlexBox justifyContent="Center" class="sapUiMediumMarginTop">
+			<VBox width="24rem" class="sapUiSmallMarginBeginEnd">
+				<Title text="{i18n>registerTitle}" level="H2" titleStyle="H3" />
+				<Text text="{i18n>registerSubtitle}" class="sapUiTinyMarginTop sapUiSmallMarginBottom" />
+
+				<MessageStrip
+					text="{register>/error}"
+					type="Error"
+					showIcon="true"
+					visible="{= !!${register>/error} }"
+					class="sapUiSmallMarginBottom" />
+
+				<Label text="{i18n>emailLabel}" labelFor="registerEmail" required="true" />
+				<Input
+					id="registerEmail"
+					type="Email"
+					value="{register>/email}"
+					placeholder="{i18n>emailPlaceholder}"
+					valueState="{register>/emailState}"
+					valueStateText="{register>/emailStateText}"
+					change=".onEmailChange"
+					submit=".onRegister" />
+
+				<Label text="{i18n>passwordLabel}" labelFor="registerPassword" required="true" class="sapUiSmallMarginTop" />
+				<!-- one single password input; the value-help icon works as the "eye" toggle -->
+				<Input
+					id="registerPassword"
+					type="{= ${register>/showPassword} ? 'Text' : 'Password' }"
+					value="{register>/password}"
+					valueLiveUpdate="true"
+					liveChange=".onPasswordLiveChange"
+					placeholder="{i18n>passwordPlaceholder}"
+					valueState="{register>/passwordState}"
+					valueStateText="{i18n>passwordWeak}"
+					showValueHelp="true"
+					valueHelpIconSrc="{= ${register>/showPassword} ? 'sap-icon://hide' : 'sap-icon://show' }"
+					valueHelpRequest=".onTogglePassword"
+					tooltip="{= ${register>/showPassword} ? ${i18n>hidePassword} : ${i18n>showPassword} }"
+					submit=".onRegister" />
+
+				<!-- rules appear as soon as the user starts typing; each turns green when met -->
+				<VBox visible="{= !!${register>/password} }" class="sapUiTinyMarginTop">
+					<Text text="{i18n>passwordRulesTitle}" class="sapUiTinyMarginBottom" />
+					<ObjectStatus
+						text="{i18n>ruleLength}"
+						icon="{= ${register>/rules/length} ? 'sap-icon://sys-enter-2' : 'sap-icon://border' }"
+						state="{= ${register>/rules/length} ? 'Success' : 'None' }" />
+					<ObjectStatus
+						text="{i18n>ruleUpper}"
+						icon="{= ${register>/rules/upper} ? 'sap-icon://sys-enter-2' : 'sap-icon://border' }"
+						state="{= ${register>/rules/upper} ? 'Success' : 'None' }" />
+					<ObjectStatus
+						text="{i18n>ruleLower}"
+						icon="{= ${register>/rules/lower} ? 'sap-icon://sys-enter-2' : 'sap-icon://border' }"
+						state="{= ${register>/rules/lower} ? 'Success' : 'None' }" />
+					<ObjectStatus
+						text="{i18n>ruleDigit}"
+						icon="{= ${register>/rules/digit} ? 'sap-icon://sys-enter-2' : 'sap-icon://border' }"
+						state="{= ${register>/rules/digit} ? 'Success' : 'None' }" />
+					<ObjectStatus
+						text="{i18n>ruleSpecial}"
+						icon="{= ${register>/rules/special} ? 'sap-icon://sys-enter-2' : 'sap-icon://border' }"
+						state="{= ${register>/rules/special} ? 'Success' : 'None' }" />
+				</VBox>
+
+				<Button
+					text="{i18n>registerButton}"
+					type="Emphasized"
+					width="100%"
+					busy="{register>/busy}"
+					press=".onRegister"
+					class="sapUiMediumMarginTop" />
+
+				<HBox alignItems="Center" class="sapUiSmallMarginTop">
+					<Text text="{i18n>haveAccountText}" class="sapUiTinyMarginEnd" />
+					<Link text="{i18n>loginLink}" press=".onNavToLogin" />
+				</HBox>
+			</VBox>
+		</FlexBox>
+	</Page>
+</mvc:View>

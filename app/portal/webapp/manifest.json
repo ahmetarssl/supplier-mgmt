@@ -1,0 +1,83 @@
+{
+  "_version": "1.60.0",
+  "sap.app": {
+    "id": "supplier.portal",
+    "type": "application",
+    "i18n": {
+      "bundleUrl": "i18n/i18n.properties",
+      "supportedLocales": ["en", "tr"],
+      "fallbackLocale": "en"
+    },
+    "applicationVersion": { "version": "1.0.0" },
+    "title": "{{appTitle}}",
+    "subTitle": "{{appSubTitle}}",
+    "description": "{{appDescription}}",
+    "crossNavigation": {
+      "inbounds": {
+        "Supplier-apply": {
+          "semanticObject": "Supplier",
+          "action": "apply",
+          "title": "{{appTitle}}",
+          "subTitle": "{{appSubTitle}}",
+          "icon": "sap-icon://supplier",
+          "signature": { "parameters": {}, "additionalParameters": "allowed" }
+        }
+      }
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "icons": { "icon": "sap-icon://supplier" },
+    "deviceTypes": { "desktop": true, "tablet": true, "phone": true }
+  },
+  "sap.ui5": {
+    "flexEnabled": false,
+    "dependencies": {
+      "minUI5Version": "1.120.0",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {},
+        "sap.ui.layout": {},
+        "sap.ui.unified": {},
+        "sap.suite.ui.commons": {}
+      }
+    },
+    "contentDensities": { "compact": true, "cozy": true },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "supplier.portal.i18n.i18n",
+          "supportedLocales": ["en", "tr"],
+          "fallbackLocale": "en"
+        }
+      }
+    },
+    "rootView": {
+      "viewName": "supplier.portal.view.App",
+      "type": "XML",
+      "id": "app"
+    },
+    "routing": {
+      "config": {
+        "routerClass": "sap.m.routing.Router",
+        "type": "View",
+        "viewType": "XML",
+        "path": "supplier.portal.view",
+        "controlId": "app",
+        "controlAggregation": "pages",
+        "async": true
+      },
+      "routes": [
+        { "pattern": "", "name": "login", "target": "login" },
+        { "pattern": "register", "name": "register", "target": "register" },
+        { "pattern": "application", "name": "application", "target": "application" }
+      ],
+      "targets": {
+        "login": { "id": "login", "name": "Login", "level": 1 },
+        "register": { "id": "register", "name": "Register", "level": 2 },
+        "application": { "id": "application", "name": "Application", "level": 3 }
+      }
+    }
+  }
+}

@@ -1,0 +1,169 @@
+<mvc:View
+	controllerName="supplier.portal.controller.Application"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:u="sap.ui.unified"
+	xmlns="sap.m">
+	<Page
+		id="applicationPage"
+		title="{i18n>appTitle}"
+		busy="{app>/busy}"
+		busyIndicatorDelay="0"
+		showFooter="{= ${app>/mode} === 'form' || ${app>/mode} === 'reapply' }">
+		<headerContent>
+			<Text text="{parts: ['i18n>loggedInAs', 'app>/email'], formatter: '.formatMessage'}" />
+			<Button text="{i18n>logoutButton}" icon="sap-icon://log" press=".onLogout" />
+		</headerContent>
+
+		<!-- ================= FORM (new application or re-apply) ================= -->
+		<VBox visible="{= ${app>/mode} === 'form' || ${app>/mode} === 'reapply' }" class="sapUiSmallMargin">
+			<MessageStrip
+				text="{i18n>reapplyInfo}"
+				type="Warning"
+				showIcon="true"
+				visible="{= ${app>/mode} === 'reapply' }"
+				class="sapUiSmallMarginBottom" />
+			<MessageStrip
+				text="{app>/application/rejectionComment}"
+				type="Error"
+				showIcon="true"
+				visible="{= ${app>/mode} === 'reapply' }"
+				class="sapUiSmallMarginBottom" />
+			<MessageStrip text="{i18n>requiredHint}" type="Information" showIcon="true" class="sapUiSmallMarginBottom" />
+
+			<f:SimpleForm
+				id="applicationForm"
+				editable="true"
+				layout="ColumnLayout"
+				columnsM="2"
+				columnsL="2"
+				columnsXL="2"
+				title="{= ${app>/mode} === 'reapply' ? ${i18n>reapplyTitle} : ${i18n>formTitle} }">
+				<f:content>
+					<core:Title text="{i18n>sectionCompany}" />
+					<Label text="{i18n>companyName}" labelFor="companyName" required="true" />
+					<Input
+						id="companyName"
+						value="{app>/form/companyName}"
+						maxLength="100"
+						editable="{app>/editable/companyName}"
+						valueState="{app>/state/companyName}"
+						valueStateText="{i18n>fieldRequired}"
+						change=".onRequiredChange" />
+
+					<Label text="{i18n>category}" labelFor="category" />
+					<Select
+						id="category"
+						selectedKey="{app>/form/category}"
+						forceSelection="false"
+						width="100%"
+						editable="{app>/editable/category}">
+						<core:Item key="" text="{i18n>categoryNone}" />
+						<core:Item key="HARDWARE" text="{i18n>categoryHARDWARE}" />
+						<core:Item key="SOFTWARE" text="{i18n>categorySOFTWARE}" />
+						<core:Item key="SERVICES" text="{i18n>categorySERVICES}" />
+						<core:Item key="CONSULTING" text="{i18n>categoryCONSULTING}" />
+					</Select>
+
+					<Label text="{i18n>taxNumber}" labelFor="taxNumber" />
+					<Input id="taxNumber" value="{app>/form/taxNumber}" maxLength="20" editable="{app>/editable/taxNumber}" />
+
+					<Label text="{i18n>website}" labelFor="website" />
+					<Input id="website" type="Url" value="{app>/form/website}" maxLength="255" editable="{app>/editable/website}" placeholder="https://" />
+
+					<core:Title text="{i18n>sectionContact}" />
+					<Label text="{i18n>contactPerson}" labelFor="contactPerson" required="true" />
+					<Input
+						id="contactPerson"
+						value="{app>/form/contactPerson}"
+						maxLength="100"
+						editable="{app>/editable/contactPerson}"
+						valueState="{app>/state/contactPerson}"
+						valueStateText="{i18n>fieldRequired}"
+						change=".onRequiredChange" />
+
+					<Label text="{i18n>phone}" labelFor="phone" />
+					<Input id="phone" type="Tel" value="{app>/form/phone}" maxLength="30" editable="{app>/editable/phone}" />
+
+					<Label text="{i18n>country}" labelFor="country" />
+					<Input id="country" value="{app>/form/country}" maxLength="60" editable="{app>/editable/country}" />
+
+					<Label text="{i18n>address}" labelFor="address" />
+					<TextArea id="address" value="{app>/form/address}" maxLength="500" rows="2" width="100%" editable="{app>/editable/address}" />
+
+					<Label text="{i18n>notes}" labelFor="notes" />
+					<TextArea id="notes" value="{app>/form/notes}" maxLength="1000" rows="3" width="100%" editable="{app>/editable/notes}" />
+				</f:content>
+			</f:SimpleForm>
+
+			<!-- certificate: kept outside the SimpleForm because it needs several controls in one row -->
+			<Panel headerText="{i18n>sectionCertificate}" class="sapUiSmallMarginTop">
+				<VBox>
+					<Label text="{i18n>certificate}" labelFor="certificateUploader" required="true" />
+					<!-- the rules are shown before the user picks a file -->
+					<MessageStrip text="{i18n>certificateHint}" type="Information" showIcon="true" class="sapUiTinyMarginTop sapUiTinyMarginBottom" />
+					<u:FileUploader
+						id="certificateUploader"
+						name="certificate"
+						width="100%"
+						fileType="pdf"
+						mimeType="application/pdf"
+						maximumFileSize="10"
+						sendXHR="true"
+						useMultipart="false"
+						uploadOnChange="false"
+						placeholder="{i18n>certificatePlaceholder}"
+						buttonText="{i18n>certificateBrowse}"
+						icon="sap-icon://pdf-attachment"
+						enabled="{app>/editable/certificate}"
+						valueState="{app>/state/certificate}"
+						valueStateText="{app>/certificateStateText}"
+						change=".onCertificateChange"
+						typeMissmatch=".onCertificateTypeMismatch"
+						fileSizeExceed=".onCertificateSizeExceed" />
+					<Text
+						text="{parts: ['i18n>certificateCurrent', 'app>/application/certificateFileName'], formatter: '.formatMessage'}"
+						visible="{= !!${app>/application/certificateFileName} }"
+						class="sapUiTinyMarginTop" />
+				</VBox>
+			</Panel>
+		</VBox>
+
+		<!-- ================= STATUS (after submit) ================= -->
+		<VBox visible="{= ${app>/mode} === 'status' }" class="sapUiSmallMargin">
+			<Title text="{i18n>statusTitle}" level="H2" titleStyle="H4" class="sapUiSmallMarginBottom" />
+			<MessageStrip text="{app>/statusMessage}" type="{app>/statusType}" showIcon="true" class="sapUiSmallMarginBottom" />
+
+			<!-- filled by model/processFlow.js -->
+			<VBox id="flowContainer" />
+
+			<Panel
+				headerText="{i18n>rejectionReasonTitle}"
+				visible="{= ${app>/application/status} === 'REJECTED' }"
+				class="sapUiMediumMarginTop">
+				<VBox>
+					<Text text="{app>/application/rejectionComment}" />
+					<Text text="{app>/revisionText}" class="sapUiSmallMarginTop" />
+					<Button
+						text="{i18n>reapplyButton}"
+						type="Emphasized"
+						icon="sap-icon://refresh"
+						press=".onReapply"
+						class="sapUiSmallMarginTop" />
+				</VBox>
+			</Panel>
+		</VBox>
+
+		<footer>
+			<OverflowToolbar>
+				<ToolbarSpacer />
+				<Button
+					text="{i18n>cancelButton}"
+					visible="{= ${app>/mode} === 'reapply' }"
+					press=".onCancelReapply" />
+				<Button text="{i18n>submitButton}" type="Emphasized" icon="sap-icon://paper-plane" press=".onSubmit" />
+			</OverflowToolbar>
+		</footer>
+	</Page>
+</mvc:View>

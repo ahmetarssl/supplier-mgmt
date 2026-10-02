@@ -1,0 +1,79 @@
+### Backend checks without the UI ("the frontend can be bypassed, the backend still says no")
+### Use with the VS Code extension "REST Client" (humao.rest-client): click "Send Request" above each block.
+### All requests go through the approuter (:5000), exactly like the browser.
+
+@base = http://localhost:5000/odata/v4/supplier
+@email = demo{{$randomInt 1000 9999}}@test.com
+
+### 1) Register (copy "token" from the response into @token below)
+# @name register
+POST {{base}}/register
+Content-Type: application/json
+Accept-Language: tr
+
+{ "email": "{{email}}", "password": "Str0ng!Pass" }
+
+###
+@token = {{register.response.body.token}}
+
+### 2) Weak password -> 400 PASSWORD_WEAK
+POST {{base}}/register
+Content-Type: application/json
+Accept-Language: tr
+
+{ "email": "weak@test.com", "password": "abc" }
+
+### 3) Empty required fields -> 400 (backend check, no UI involved)
+POST {{base}}/saveApplication
+Content-Type: application/json
+Accept-Language: tr
+X-Supplier-Token: {{token}}
+
+{ "companyName": "", "contactPerson": "" }
+
+### 4) Valid draft (copy the ID)
+# @name draft
+POST {{base}}/saveApplication
+Content-Type: application/json
+Accept-Language: tr
+X-Supplier-Token: {{token}}
+
+{ "companyName": "Demo A.S.", "contactPerson": "Ayse Yilmaz", "category": "HARDWARE" }
+
+###
+@id = {{draft.response.body.ID}}
+
+### 5) Submit without certificate -> 400 CERTIFICATE_REQUIRED
+POST {{base}}/submitApplication
+Content-Type: application/json
+Accept-Language: tr
+X-Supplier-Token: {{token}}
+
+{}
+
+### 6) Upload a text file -> 415 CERTIFICATE_NOT_PDF
+PUT {{base}}/CertificateUploads({{id}})/certificate
+Content-Type: text/plain
+Accept-Language: tr
+X-Supplier-Token: {{token}}
+
+< ./files/not-a-pdf.txt
+
+### 7) Upload a PNG renamed to .pdf, sent as application/pdf -> 415 (content is checked: "%PDF-")
+PUT {{base}}/CertificateUploads({{id}})/certificate
+Content-Type: application/pdf
+Accept-Language: tr
+X-Supplier-Token: {{token}}
+
+< ./files/renamed-image.pdf
+
+### 8) Upload > 10 MB -> 413 CERTIFICATE_TOO_LARGE
+PUT {{base}}/CertificateUploads({{id}})/certificate
+Content-Type: application/pdf
+Accept-Language: tr
+X-Supplier-Token: {{token}}
+
+< ./files/too-large-11mb.pdf
+
+### 9) Approver endpoint without login -> approuter does not let it through (401 / login redirect)
+GET {{base}}/Suppliers
