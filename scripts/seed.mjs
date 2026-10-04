@@ -1,13 +1,4 @@
-/* eslint-disable no-console */
-/**
- * Fills the (in-memory) database with demo applications through the public API,
- * exactly like real suppliers would: register -> save form -> upload PDF -> submit.
- *
- *   npm run seed                       (CAP must be running; default http://localhost:4004)
- *   BASE_URL=http://localhost:4004 npm run seed
- *
- * Every demo supplier uses the password  Demo!2026
- */
+
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'

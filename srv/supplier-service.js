@@ -15,7 +15,7 @@ const CATEGORIES = ['HARDWARE', 'SOFTWARE', 'SERVICES', 'CONSULTING']
 const FORM_FIELDS = ['companyName', 'contactPerson', 'phone', 'country', 'category', 'taxNumber', 'website', 'address', 'notes']
 const REVISABLE_FIELDS = [...FORM_FIELDS, 'certificate']
 const OPEN_STATUSES = ['SUBMITTED', 'IN_REVIEW']
-// used to keep login timing equal whether or not the e-mail exists (no account enumeration via timing)
+
 const DUMMY_HASH = bcrypt.hashSync('timing-equalizer', BCRYPT_ROUNDS)
 
 const sha256 = value => crypto.createHash('sha256').update(value).digest('hex')
@@ -48,11 +48,8 @@ export default class SupplierService extends cds.ApplicationService {
     const db = cds.entities('supplier.mgmt')
     const { CertificateUploads, Suppliers } = this.entities
 
-    // ------------------------------------------------------------------
-    // helpers
-    // ------------------------------------------------------------------
+  
 
-    /** Creates a session and returns the plain token (only its hash is stored). */
     const createSession = async accountId => {
       const token = crypto.randomBytes(32).toString('hex')
       await DELETE.from(db.SupplierSessions).where({ account_ID: accountId, expiresAt: { '<': new Date().toISOString() } })
@@ -64,7 +61,7 @@ export default class SupplierService extends cds.ApplicationService {
       return token
     }
 
-    /** Resolves the supplier account from the X-Supplier-Token header or rejects with 401. */
+
     const requireAccount = async req => {
       const token = req.headers?.['x-supplier-token']
       if (!token) return req.reject(403, 'SESSION_REQUIRED')
@@ -97,7 +94,7 @@ export default class SupplierService extends cds.ApplicationService {
         certificateSize: row.certificateSize
       }
 
-    /** Server-side validation of the form - the same rules the UI shows. */
+    
     const validateForm = (req, data) => {
       if (!data.companyName) req.error(400, 'COMPANY_NAME_REQUIRED', [], 'companyName')
       if (!data.contactPerson) req.error(400, 'CONTACT_PERSON_REQUIRED', [], 'contactPerson')
@@ -110,9 +107,7 @@ export default class SupplierService extends cds.ApplicationService {
       if (req.errors) throw req.reject()
     }
 
-    // ------------------------------------------------------------------
-    // supplier side: register / login / logout
-    // ------------------------------------------------------------------
+
 
     this.on('register', async req => {
       const email = normalizeEmail(req.data.email)
@@ -128,12 +123,12 @@ export default class SupplierService extends cds.ApplicationService {
       try {
         await INSERT.into(db.SupplierAccounts).entries({ ID, email, passwordHash: await bcrypt.hash(password, BCRYPT_ROUNDS) })
       } catch (e) {
-        // two parallel registrations with the same e-mail: the unique constraint wins
+       
         if (/unique/i.test(e.message)) return req.reject(409, 'EMAIL_ALREADY_EXISTS', [], 'email')
         throw e
       }
       LOG.info('supplier registered', email)
-      // registration counts as login
+      
       return { token: await createSession(ID), email }
     })
 
@@ -142,7 +137,6 @@ export default class SupplierService extends cds.ApplicationService {
       const password = String(req.data.password ?? '')
       const account = await SELECT.one.from(db.SupplierAccounts).where({ email })
       const ok = await bcrypt.compare(password, account?.passwordHash ?? DUMMY_HASH)
-      // same message for "unknown e-mail" and "wrong password"
       if (!account || !ok) return req.reject(400, 'INVALID_CREDENTIALS')
       return { token: await createSession(account.ID), email }
     })
@@ -152,9 +146,6 @@ export default class SupplierService extends cds.ApplicationService {
       if (token) await DELETE.from(db.SupplierSessions).where({ tokenHash: sha256(token) })
     })
 
-    // ------------------------------------------------------------------
-    // supplier side: application
-    // ------------------------------------------------------------------
 
     this.on('getMyApplication', async req => {
       const accountId = await requireAccount(req)
@@ -175,7 +166,6 @@ export default class SupplierService extends cds.ApplicationService {
       }
 
       if (existing.status === 'REJECTED') {
-        // re-apply: only the fields the approver asked to revise may change
         const allowed = revisionList(existing)
         for (const field of FORM_FIELDS) {
           if (!allowed.includes(field) && (existing[field] ?? null) !== data[field])
@@ -190,7 +180,6 @@ export default class SupplierService extends cds.ApplicationService {
       return toInfo(await SELECT.one.from(db.Suppliers, existing.ID))
     })
 
-    // PUT /CertificateUploads(<ID>)/certificate  (media upload)
     this.before('UPDATE', CertificateUploads, async req => {
       const accountId = await requireAccount(req)
       const ID = req.data.ID ?? req.params?.at(-1)?.ID ?? req.params?.at(-1)
@@ -203,31 +192,31 @@ export default class SupplierService extends cds.ApplicationService {
       }
       if (!('certificate' in req.data)) return req.reject(400, 'CERTIFICATE_REQUIRED')
 
-      // 1) cheap checks on the headers - reject before reading the body
+   
       const contentType = String(req.headers['content-type'] ?? '').split(';')[0].trim().toLowerCase()
       if (contentType !== 'application/pdf') return req.reject(415, 'CERTIFICATE_NOT_PDF')
       const declaredSize = Number(req.headers['content-length'])
       if (declaredSize > MAX_CERTIFICATE_BYTES) return req.reject(413, 'CERTIFICATE_TOO_LARGE')
 
-      // 2) read the body with a hard limit (content-length can be missing or lie)
+      
       const buffer = await streamToBuffer(req.data.certificate, MAX_CERTIFICATE_BYTES)
       if (!buffer || buffer.length === 0) return req.reject(400, 'CERTIFICATE_REQUIRED')
       if (buffer.tooLarge) return req.reject(413, 'CERTIFICATE_TOO_LARGE')
 
-      // 3) content check: a real PDF starts with "%PDF-" (a renamed .png/.exe does not)
+     
       if (buffer.subarray(0, 5).toString('latin1') !== '%PDF-') return req.reject(415, 'CERTIFICATE_NOT_PDF')
 
       let fileName = 'certificate.pdf'
       try {
         if (req.headers.slug) fileName = decodeURIComponent(req.headers.slug).slice(0, 255)
       } catch {
-        /* keep default name */
+       
       }
 
       req.data.certificate = buffer
       req.data.certificateMediaType = 'application/pdf'
       req.data.certificateFileName = fileName
-      // certificateSize / UploadedAt are not part of the projection -> written in the after handler
+      
       req._certificateMeta = { certificateSize: buffer.length, certificateUploadedAt: new Date().toISOString() }
     })
 
@@ -242,7 +231,7 @@ export default class SupplierService extends cds.ApplicationService {
       if (!application) return req.reject(404, 'APPLICATION_NOT_FOUND')
       if (!['DRAFT', 'REJECTED'].includes(application.status)) return req.reject(409, 'APPLICATION_LOCKED')
 
-      // backend check of the required fields (the UI checks them too, but the UI can be bypassed)
+      
       if (!application.companyName) req.error(400, 'COMPANY_NAME_REQUIRED', [], 'companyName')
       if (!application.contactPerson) req.error(400, 'CONTACT_PERSON_REQUIRED', [], 'contactPerson')
       if (!application.certificateSize) req.error(400, 'CERTIFICATE_REQUIRED', [], 'certificate')
@@ -268,19 +257,13 @@ export default class SupplierService extends cds.ApplicationService {
       return toInfo(await SELECT.one.from(db.Suppliers, application.ID))
     })
 
-    // ------------------------------------------------------------------
-    // approver side (role 'Approval' enforced by @restrict / @requires)
-    // ------------------------------------------------------------------
 
     const keyOf = req => {
       const key = req.params?.at(-1)
       return key?.ID ?? key
     }
 
-    /**
-     * Atomic status transition: the WHERE on the current status makes sure two approvers
-     * (or an approver and the AI) cannot both decide the same application.
-     */
+  
     const decide = async (req, ID, changes) => {
       const affected = await UPDATE(db.Suppliers, ID)
         .with({ ...changes, decidedAt: new Date().toISOString(), decidedBy: req.user.id })
@@ -338,7 +321,7 @@ export default class SupplierService extends cds.ApplicationService {
       await decide(req, ID, {
         status,
         decisionSource: 'AI',
-        // a rejection always needs a comment -> the AI's reason becomes the comment
+    
         rejectionComment: status === 'REJECTED' ? result.reason : null,
         revisionFields: status === 'REJECTED' ? 'certificate' : null
       })

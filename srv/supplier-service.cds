@@ -1,14 +1,9 @@
 using {supplier.mgmt as db} from '../db/schema';
 
-/**
- * One OData V4 service for both apps.
- * - Supplier side (register / login / application / certificate upload) is public ('any').
- *   Suppliers are identified by their own session token (header X-Supplier-Token), not by XSUAA.
- * - Approver side (list, decide, AI) requires the XSUAA role 'Approval'.
- */
+
 service SupplierService {
 
-  // ---------- types ----------
+  
 
   type AuthResult {
     token : String;
@@ -49,7 +44,7 @@ service SupplierService {
     rejected : Integer;
   }
 
-  // ---------- supplier side (public) ----------
+  
 
   @requires: 'any'
   action   register(email : String, password : String)                     returns AuthResult;
@@ -77,10 +72,7 @@ service SupplierService {
   @requires: 'any'
   action   submitApplication()                                              returns ApplicationInfo;
 
-  /**
-   * Upload target for the certificate: PUT /CertificateUploads(<ID>)/certificate
-   * Only UPDATE is granted; ownership + status are checked in the handler.
-   */
+
   @restrict: [{
     grant: 'UPDATE',
     to   : 'any'
@@ -94,7 +86,6 @@ service SupplierService {
       certificateFileName
     };
 
-  // ---------- approver side (role 'Approval') ----------
 
   @readonly
   @restrict: [{

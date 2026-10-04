@@ -34,6 +34,7 @@ sap.ui.define([
 					categories: [],
 					sorter: { path: "submittedAt", descending: true },
 					filtersActive: false,
+					accessError: "",
 					total: 0,
 					counts: {},
 					columns: defaultColumns()
@@ -83,12 +84,24 @@ sap.ui.define([
 
 		async _loadCounts() {
 			try {
-				const binding = this.getOwnerComponent().getModel().bindContext("/getStatusCounts()");
+				// own request ($direct): a failing counts call must not break the table's batch request
+				const binding = this.getOwnerComponent().getModel().bindContext("/getStatusCounts()", null, { $$groupId: "$direct" });
 				const counts = await binding.getBoundContext().requestObject();
 				this._viewModel().setProperty("/counts", counts);
 			} catch {
 				// the table shows the real error (e.g. 403); counts are optional
 			}
+		},
+
+		/** Errors of the list request (403 without role, network, ...) become visible above the table. */
+		onDataReceived(event) {
+			const error = event.getParameter("error");
+			if (!error) {
+				this._viewModel().setProperty("/accessError", "");
+				return;
+			}
+			const forbidden = error.status === 403 || error.status === 401;
+			this._viewModel().setProperty("/accessError", forbidden ? this._text("noAccess") : error.message);
 		},
 
 		onTableUpdateFinished(event) {

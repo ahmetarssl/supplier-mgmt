@@ -1,13 +1,4 @@
-/* eslint-disable no-console */
-/**
- * Backend smoke test: runs the success AND failure scenarios of the case against CAP directly.
- *
- *   npm run watch          (terminal 1, development profile with mocked users)
- *   npm run test:api       (terminal 2)
- *
- * Approver calls use the mocked users from package.json (approver/approver, norole/norole).
- * The AI scenario needs a reachable 'openrouter-api' destination; it is skipped otherwise.
- */
+
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'

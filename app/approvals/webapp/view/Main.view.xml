@@ -6,6 +6,13 @@
 	displayBlock="true">
 	<App id="app">
 		<Page id="mainPage" title="{i18n>appTitle}">
+			<!-- shown when the backend refuses the data, e.g. user without the Approval role (403) -->
+			<MessageStrip
+				text="{view>/accessError}"
+				type="Error"
+				showIcon="true"
+				visible="{= !!${view>/accessError} }"
+				class="sapUiSmallMargin" />
 			<IconTabBar
 				id="statusTabs"
 				selectedKey="{view>/tab}"
@@ -31,7 +38,8 @@
 						items="{
 							path: '/Suppliers',
 							parameters: { $count: true },
-							sorter: { path: 'submittedAt', descending: true }
+							sorter: { path: 'submittedAt', descending: true },
+							events: { dataReceived: '.onDataReceived' }
 						}">
 						<headerToolbar>
 							<OverflowToolbar>

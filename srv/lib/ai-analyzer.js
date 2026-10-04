@@ -3,13 +3,13 @@ import { PDFParse } from 'pdf-parse'
 
 const LOG = cds.log('ai')
 
-/** Upper bound for the certificate text sent to the model (keeps the prompt small and cheap). */
+
 const MAX_TEXT_CHARS = 12000
-/** Below this many characters we assume the PDF has no text layer (e.g. a scanned image). */
+
 const MIN_TEXT_CHARS = 40
 const DECISIONS = ['APPROVE', 'REJECT']
 
-/** Errors the caller translates into user-facing messages. */
+
 export class AIError extends Error {
   constructor(code, message, { retriable = false } = {}) {
     super(message ?? code)
@@ -18,7 +18,7 @@ export class AIError extends Error {
   }
 }
 
-/** Extracts the text layer of a PDF buffer. */
+
 export async function extractPdfText(buffer) {
   const parser = new PDFParse({ data: new Uint8Array(buffer) })
   try {
@@ -67,10 +67,7 @@ function buildMessages({ supplier, pdfText, locale }) {
   ]
 }
 
-/**
- * Validates the model output. Models sometimes wrap JSON in ``` fences or add text around it,
- * so we take the first {...} block and check its shape strictly.
- */
+
 export function parseDecision(content) {
   if (typeof content !== 'string') throw new AIError('AI_INVALID_OUTPUT', 'empty model output', { retriable: true })
   const match = content.match(/\{[\s\S]*\}/)
@@ -99,12 +96,7 @@ function isRetriable(err) {
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
-/**
- * Asks the LLM (via the BTP destination behind the 'openrouter' remote service) for a decision.
- * - timeout: configured per request in cds.requires.openrouter.credentials.requestTimeout
- * - retry: up to `maxAttempts` with exponential backoff, only for transient errors / invalid output
- * - validation: the answer must be {decision: APPROVE|REJECT, reason}
- */
+
 export async function analyzeCertificate({ supplier, pdfText, locale }) {
   if (!pdfText || pdfText.length < MIN_TEXT_CHARS) throw new AIError('AI_NO_TEXT')
 
@@ -114,7 +106,7 @@ export async function analyzeCertificate({ supplier, pdfText, locale }) {
   const body = {
     model: config.llmModel,
     temperature: 0,
-    max_tokens: 400,
+    max_tokens: 1500, // reasoning models need room to think; the answer itself is short
     messages: buildMessages({ supplier, pdfText, locale })
   }
 
@@ -131,10 +123,10 @@ export async function analyzeCertificate({ supplier, pdfText, locale }) {
       return parseDecision(content)
     } catch (err) {
       lastError = err
-      const retriable = isRetriable(err)
+      const retriable = isRetriable(err) && attempt < maxAttempts
       LOG.warn(`AI attempt ${attempt}/${maxAttempts} failed (${retriable ? 'retrying' : 'giving up'}):`, err.message)
-      if (!retriable || attempt === maxAttempts) break
-      await sleep(500 * 2 ** (attempt - 1)) // 0.5s, 1s, 2s ...
+      if (!retriable) break
+      await sleep(1000 * 2 ** (attempt - 1)) // 1s, 2s, 4s ...
     }
   }
   throw new AIError('AI_UNAVAILABLE', lastError?.message)

@@ -1,4 +1,0 @@
-ID, companyName, contactPerson, email, status
-1,FedEx,Daniel,daniel@test.com,SUBMITTED
-2,Trendyol,Ahmet,ahmet@test.com,APPROVED
-3,Aselsan,Arda,arda@test.com,REJECTED
